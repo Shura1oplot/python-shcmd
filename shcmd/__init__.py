@@ -39,8 +39,13 @@ escape_control = {"\a": "\\a", "\b": "\\b", "\t": "\\t", "\n": "\\n",
 
 class NoSepType(unicode):
 
+    __instance = None
+
     def __new__(cls):
-        return super(NoSepType, cls).__new__(cls)
+        if cls.__instance is None:
+            cls.__instance = super(NoSepType, cls).__new__(cls)
+
+        return cls.__instance
 
     def __repr__(self):
         return "NOSEP"
@@ -61,6 +66,14 @@ class inline(tuple):
 
 
 class QuotingFlag(unicode):
+
+    __instances = {}
+
+    def __new__(cls, s):
+        if s not in cls.__instances:
+            cls.__instances[s] = super(QuotingFlag, cls).__new__(cls, s)
+
+        return cls.__instances[s]
 
     def __call__(self, *args):
         return inline((PUSHQ, self) + args + (POPQ, ))
